@@ -3,20 +3,12 @@
 let game = null; // Stores the current instance of the game
 
 /**
- * Function to debug and display the state of the game object.
- * @param {Object} obj - The object to be debugged.
- */
-function debug(obj) {
-  document.getElementById("debug").innerHTML = JSON.stringify(obj); // Displays the state of the object as JSON
-}
-
-/**
  * Initializes the game buttons.
  */
 function buttonsInitialization() {
-  document.getElementById("card").disabled = false; // Enables the button to draw a card
-  document.getElementById("stand").disabled = false; // Enables the button to stand
-  document.getElementById("new_game").disabled = true; // Disables the button for a new game
+  $("#card").disabled = false;// Enables the button to draw a card
+  $("#stand").disabled = false; // Enables the button to stand
+  //$("#new_game").disabled= true; // Disables the button for a new game
 }
 
 /**
@@ -25,9 +17,9 @@ function buttonsInitialization() {
 function finalizeButtons() {
   //TODO: Reveal the dealer's hidden card if you hid it like you were supposed to.
 
-  document.getElementById("card").disabled = true; // Disables the button to draw a card
-  document.getElementById("stand").disabled = true; // Disables the button to stand
-  document.getElementById("new_game").disabled = false; // Enables the button for a new game
+  $("#card").disabled = true; // Disables the button to draw a card
+  $("#stand").disabled = true; // Disables the button to stand
+  //$("#new_game").disabled = false; // Enables the button for a new game
 }
 
 //TODO: Implement this method.
@@ -35,10 +27,9 @@ function finalizeButtons() {
  * Clears the page to start a new game.
  */
 function clearPage() {
-  document.getElementById("dealer").innerHTML = "";
-  document.getElementById("player").innerHTML = "";
-  document.getElementById("game_status").innerHTML = "";
-  document.getElementById("debug").innerHTML = "";
+  $("#dealer").text("");
+  $("#player").text("");
+  $("#game_status").text("");
 }
 
 //TODO: Complete this method.
@@ -61,7 +52,7 @@ function newGame() {
   updatePlayer(state);
 
   buttonsInitialization();
-  debug(game); // Displays the current state of the game for debugging
+  //debug(game); // Displays the current state of the game for debugging
 
   //TODO: Add missing code.
 }
@@ -88,7 +79,15 @@ function finalScore(state) {
     msg = `Dealer Wins! ${game.getCardsValue(game.getDealerCards())} pontos!`;
   }
 
-  document.getElementById("game_status").innerText = msg;
+  // Em vez de escrever na página principal, chama o pop up (modal)
+  showWinnerPopup(
+    msg,
+    game.getCardsValue(game.getPlayerCards()),
+    game.getCardsValue(game.getDealerCards())
+  );
+
+  //document.getElementById("game_status").innerText = msg;
+  $("#game_status").text("");
 }
 
 //TODO: Implement this method.
@@ -97,8 +96,10 @@ function finalScore(state) {
  * @param {Object} state - The current state of the game.
  */
 function updateDealer(state) {
-  const dealerELT = document.getElementById("dealer");
-  dealerELT.innerHTML = "";
+  // const dealerELT = document.getElementById("dealer");
+  // dealerELT.innerHTML = "";
+
+  $("#dealer").text("");
   const dealerCards = game.getDealerCards();
   //for (let c of dealerCards) printCard(dealerELT, c);
 
@@ -110,7 +111,7 @@ function updateDealer(state) {
     //caso contrario: passa a carta para revelar
     const cardToPrint = isHiddenCard ? "back" : dealerCards[i];
 
-    printCard(dealerELT, cardToPrint);
+    printCard($("#dealer").get(0), cardToPrint);
   }
 
   const val = game.getCardsValue(dealerCards);
@@ -121,10 +122,9 @@ function updateDealer(state) {
     else msg += "Tie!";
   }
 
-  dealerELT.insertAdjacentHTML(
-    "beforeend",
-    `<div><strong>${msg}</strong></div>`
-  );
+  $("#dealer")
+    .get(0)
+    .insertAdjacentHTML("beforeend", `<div><strong>${msg}</strong></div>`);
   if (state.gameEnded) {
     finalScore(state); //msg final jogo
     finalizeButtons();
@@ -137,9 +137,8 @@ function updateDealer(state) {
  * @param {Object} state - The current state of the game.
  */
 function updatePlayer(state) {
-  const playerELT = document.getElementById("player");
-  playerELT.innerHTML = "";
-  for (let c of game.playerCards) printCard(playerELT, c); //mostra as cartas do player
+  $("#player").text("");
+  for (let c of game.playerCards) printCard($("#player").get(0), c); //mostra as cartas do player
 
   const val = game.getCardsValue(game.playerCards);
   let msg = ` Score [${val}]`;
@@ -149,10 +148,9 @@ function updatePlayer(state) {
     else msg += "Tie!";
   }
 
-  playerELT.insertAdjacentHTML(
-    "beforeend",
-    `<div><strong>${msg}</strong></div>`
-  );
+  $("#player")
+    .get(0)
+    .insertAdjacentHTML("beforeend", `<div><strong>${msg}</strong></div>`);
   if (state.gameEnded) finalizeButtons();
 }
 
@@ -165,7 +163,7 @@ function dealerNewCard() {
   const state = game.dealerMove();
   updateDealer(state);
   updatePlayer(state); //?
-  debug(game);
+  //debug(game);
   return state;
 }
 
@@ -178,7 +176,7 @@ function playerNewCard() {
   const state = game.playerMove();
   updatePlayer(state);
   updateDealer(state); // atualiza o dealer caso o player rebente
-  debug(game);
+  //debug(game);
 
   if (state.gameEnded) {
     finalizeButtons();
@@ -206,7 +204,7 @@ function dealerFinish() {
 
   updateDealer(state);
   updatePlayer(state);
-  debug(game);
+  //debug(game);
 }
 
 //TODO: Implement this method.
@@ -217,18 +215,24 @@ function dealerFinish() {
  * @param {boolean} [replace=false] - Indicates whether to replace the existing image.
  */
 function printCard(element, card, replace = false) {
-  const img = document.createElement("img");
+  const $img= $('<img>')
+  // let é uma variável local que pode mudar de valor e pode ser declarada sem valor inicial
+  let src;
   if (card === "back") {
-    img.src = "img/png/card_back.png";
-    img.alt = "Card Back";
+    src = "img/png/card_back.png";
+    
   } else {
     const fileName = card.getFileNameStem();
-    img.src = `img/png/${fileName}.png`;
-    img.alt = fileName;
+    src = `img/png/${fileName}.png`;
+   
   }
-  img.className = "m-1 card-img";
-  element.appendChild(img);
+  //atribuir a src ao img
+  $img.attr('src', src);
+  $img.addClass("m-4 mb-1 mt-1 card-img");
+  $(element).append($img);
 }
+
+/*-----------------Pop Up ------------------------*/
 /**
  * Exibe o pop up de vitória/derrota com a mensagem final
  * @param {string} winnerMessage - A mensagem de resultado do jogo ("Player Wins!")
@@ -237,58 +241,20 @@ function printCard(element, card, replace = false) {
  */
 function showWinnerPopup(winnerMessage, PlayerScore, DealerScore) {
   // Atualiza o conteúdo do Pop Up
-  const popupMessageEl = document.getElementById("Pop_Up-message");
-  if (popupMessageEl) {
+  $("#Pop_Up-message").text("");
     // Define a mensagem do vencedor no elemento do Pop Up
-    popupMessageEl.textContent = winnerMessage;
-  }
+  $("#Pop_Up-message").get(0).textContent = winnerMessage;
+  
 
   // Encontra o elemento DOM do Pop Up
-  const playerPopupElement = document.getElementById("Pop_Up-player-score");
-  const dealerPopupElement = document.getElementById("Pop_Up-dealer-score");
-  if (playerPopupElement) {
-    playerPopupElement.textContent = PlayerScore;
-  }
-
-  if (dealerPopupElement) {
-    dealerPopupElement.textContent = DealerScore;
-  }
-  const winPopupElement = document.getElementById("winPop_up");
-  if (winPopupElement) {
-    const popupInstance = bootstrap.Modal.getOrCreateInstance(winPopupElement);
+  $("#Pop_Up-player-score").text("");
+  $("#Pop_Up-dealer-score").text("");
+  
+  $("#Pop_Up-player-score").get(0).textContent = PlayerScore;
+  $("#Pop_Up-dealer-score").get(0).textContent = DealerScore;
+  
+  const popupInstance = bootstrap.Modal.getOrCreateInstance($("#winPop_up").get(0));
     // Abre o Pop Up!
-    popupInstance.show();
-  }
-}
-/**
- * Calcula e exibe o score final do jogo, chamando o Pop Up de vitória/derrota
- * @param {Object} state  O estado atual do jogo
- *
- */
-function finalScore(state) {
-  let msg = "";
-  const playerValue = game.getCardsValue(game.getPlayerCards());
-  const dealerValue = game.getCardsValue(game.getDealerCards());
-
-  if (state.playerBusted) {
-    msg = "Player Busted (> 25)! Dealer Wins.";
-  } else if (state.dealerBusted) {
-    msg = "Dealer Busted (> 25)! Player Wins.";
-  } else if (state.isDraw) {
-    msg = `Tie! Both with ${playerValue} points.`;
-  } else if (state.playerWon) {
-    if (playerValue === Blackjack.MAX_POINTS) {
-      msg = "BLACKJACK 25! Player Wins!";
-    } else {
-      msg = `Player Wins with ${playerValue} points!`;
-    }
-  } else if (state.dealerWon) {
-    msg = `Dealer Wins with ${dealerValue} points!`;
-  }
-
-  // Em vez de escrever na página principal, chama o pop up (modal)
-  showWinnerPopup(msg, playerValue, dealerValue);
-
-  // O status na página principal
-  document.getElementById("game_status").innerText = msg;
+  popupInstance.show();
+  
 }

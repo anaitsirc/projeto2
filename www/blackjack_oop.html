@@ -27,53 +27,65 @@
     <!-- Link to custom stylesheet for additional styles specific to the Blackjack game -->
     <link rel="stylesheet" href="css/blackjack_style.css" />
 
+    <script src="jquery-3.7.1.min.js"></script>
+
     <!-- Title of the webpage, displayed in the browser tab -->
-  <header class="container ">
     <title>Blackjack</title>
   </head>
 
   <body>
-    <!-- Header section containing the game title -->
-     <!-- text center; centraliza o texto dentro do cabeçalho -->
-    <header class="container text-center titulo">
-      <h1>Blackjack 25</h1>
-      <!-- Main heading for the game -->
-    </header>
+    <div class="main-content-wrapper">
+      <!-- Header section containing the game title -->
+      <!-- text center; centraliza o texto dentro do cabeçalho -->
+      <header class="container text-center titulo">
+        <div class="row align-items-center">
+          <div class="col">
+        <i class="bi bi-suit-spade-fill"></i>
+        </div>
+        <div class="col">
+        <h1>Blackjack 25</h1>
+        </div>
+        <div class="col">
+        <i class="bi bi-suit-spade-fill"></i>
+        </div>
+        </div>
+        <!-- Main heading for the game -->
+      </header>
 
-    <main class="container">
-      <!-- Main game section -->
-      <section id="game">
-        <h2 class="Dealer">Dealer</h2>
-        <!-- Subheading for the dealer's section -->
-        <p id="dealer"></p>
-        <!-- Placeholder for displaying dealer's cards -->
+      <main class="container">
+        <!-- Main game section -->
+        <section id="game">
+          <h2 class="Dealer">Dealer</h2>
+          <!-- Subheading for the dealer's section -->
+          <p id="dealer"></p>
+          <!-- Placeholder for displaying dealer's cards -->
 
-        <h2 class="Player">Player</h2>
-        <!-- Subheading for the player's section -->
-        <p id="player"></p>
-        <!-- Placeholder for displaying player's cards -->
+          <h2 class="Player">Player</h2>
+          <!-- Subheading for the player's section -->
+          <p id="player"></p>
+          <!-- Placeholder for displaying player's cards -->
 
-        <!-- Button for the player to draw a new card -->
-        <button
-          class="btn btn-primary "
-          id="card"
-          type="button"
-          onclick="playerNewCard()"
-        >
-          Card
-        </button>
+          <!-- Button for the player to draw a new card -->
+          <button
+            class="btn btn-primary"
+            id="card"
+            type="button"
+            onclick="playerNewCard()"
+          >
+            Card
+          </button>
 
-        <!-- Button for the player to stand (end their turn) -->
-        <button
-          class="btn btn-secondary"
-          id="stand"
-          type="button"
-          onclick="dealerFinish()"
-        >
-          Stand
-        </button>
+          <!-- Button for the player to stand (end their turn) -->
+          <button
+            class="btn btn-secondary"
+            id="stand"
+            type="button"
+            onclick="dealerFinish()"
+          >
+            Stand
+          </button>
 
-        <!-- Button to start a new game, initially disabled -->
+          <!-- Button to start a new game, initially disabled --
         <button
           class="btn btn-success"
           id="new_game"
@@ -82,38 +94,21 @@
           disabled
         >
           New Game
-        </button>
-      </section>
+        </button>-->
+        </section>
 
-      <!-- Section to display the game's status and messages -->
-      <section id="game_status" >
-        <!-- This will be populated dynamically during the game -->
-      </section>
+        <!-- Section to display the game's status and messages -->
+        <section id="game_status">
+          <!-- This will be populated dynamically during the game -->
+        </section>
+      </main>
 
-      <!-- Debugging section for developers to view game state -->
-       <!-- card é um componente do bootstrap -->
-        <!--mt-4 adiciona uma margem superior de 1.5rem para separar o debug do resto do jogo-->
-        <!--mx-auto centraliza o card horizontalmente-->
-        <!--max-width: 600px; define a largura máxima do card-->
-      <section id="sec_debug" class="card mt-4 mx-auto" style="max-width: 600px;">
-        <div class="card-header text-center debug">
-          <h2>Debug</h2>
-          <!-- Subheading for the debug section -->
-        </div>
-        <!-- overflow-auto permite rolagem se o conteúdo exceder a altura máxima -->
-        <!--max-height: 300px; define a altura máxima do card-->
-        <div class="card-body overflow-auto" style="max-height: 300px;">
-          <p id="debug" class="Debug">
-            <!-- Placeholder for displaying debug information -->
-          </p>
-        </div>
-      </section>
-    </main>
-
-    <!-- Footer section, currently empty -->
-    <footer class="container">
-      <!-- Any footer content can be added here -->
-    </footer>
+      <!-- Footer section, currently empty -->
+      <footer class="container" id="rodape">
+        <h1>Carolina Canto: 52688| Inês Martins: 52816</h1>
+        <!-- Any footer content can be added here -->
+      </footer>
+    </div>
 
     <!-- Link to Bootstrap's JavaScript bundle for interactive components -->
     <script
@@ -132,44 +127,52 @@
     <script>
       window.onload = newGame; // Initializes a new game on page load
     </script>
-   
-<!-- POP UP COM OS RESULTADOS-->
-  <div class="modal fade" id="winPop_up" tabindex="-1" aria-labelledby="winPop_upLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      
-      <div class="modal-header ">
-        <h5 class="modal-title" id="winPop_upLabel">Round Results</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+    <!-- POP UP COM OS RESULTADOS-->
+    <div
+      class="modal fade"
+      id="winPop_up"
+      tabindex="-1"
+      aria-labelledby="winPop_upLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="winPop_upLabel">Round Results</h5>
+          </div>
+
+          <div class="modal-body text-center">
+            <h3 id="Pop_Up-message"></h3>
+            <h4 class="Pop_Up-score">Score</h4>
+            <table class="table table-sm mt-3">
+              <thead>
+                <tr>
+                  <th class="player-label">Player</th>
+                  <th class="dealer-label">Dealer</th>
+                </tr>
+              </thead>
+              <tbody id="score-table-body">
+                <tr>
+                  <td id="Pop_Up-player-score"></td>
+                  <td id="Pop_Up-dealer-score"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="modal-footer d-flex justify-content-center">
+            <button
+              type="button"
+              class="btn btn-success botao_Modal"
+              onclick="newGame()"
+              data-bs-dismiss="modal"
+            >
+              New Game
+            </button>
+          </div>
+        </div>
       </div>
-      
-      <div class="modal-body text-center">
-    <h3 id="Pop_Up-message"></h3> 
-    <h4 class="Pop_Up-score">Score</h4>
-    <table class="table table-sm mt-3">
-      <thead>
-        <tr>
-          <th class="player-label">Player</th> 
-          <th class="dealer-label">Dealer</th>
-        </tr>
-      </thead>
-      <tbody id="score-table-body">
-        <tr>
-          <td id="Pop_Up-player-score"></td>
-          <td id="Pop_Up-dealer-score"></td>
-        </tr>
-      </tbody>
-    </table>
-</div>
-      
-      <div class="modal-footer d-flex justify-content-center">
-        <button type="button" class="btn btn-success botao_Modal" onclick="newGame()" data-bs-dismiss="modal">
-          Novo Jogo
-        </button>
-      </div>
-      
     </div>
-  </div>
-</div>
   </body>
 </html>

@@ -282,7 +282,7 @@ class Card {
     const suitStr = Card.SUIT_MAP[this.suit];
 
     if (!valueStr || !suitStr) {
-      return "card_back"; // Fallback
+      return "card_back";
     }
 
     return `${valueStr}_of_${suitStr}`;
