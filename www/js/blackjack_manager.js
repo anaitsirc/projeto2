@@ -46,27 +46,21 @@ function clearPage() {
  * Starts a new game of Blackjack.
  */
 function newGame() {
-  clearPage();
+  clearPage(); //limpa o resto anterior
 
   game = new Blackjack(); // Creates a new instance of the Blackjack game
 
+  //duas cartas a cada um | dealer- a 2ª virada pa baixo
+  game.dealerMove(); //1a card Dealer
+  game.playerMove(); //1a card Player
+
+  game.dealerMove(); //2a card Dealer
+  let state = game.playerMove(); // 2a card Player : verifica se player fez 25 ou rebentou
+
+  updateDealer(state); //display com 2ª carta do dealer oculta
+  updatePlayer(state);
+
   buttonsInitialization();
-
-  // Dealer: 2 cartas (esconde 2ª)
-  game.dealerCards.push(game.deck.pop());
-  hiddenDealerCard = game.deck.pop();
-  game.dealerCards.push(hiddenDealerCard);
-
-  const dealerEl = document.getElementById("dealer");
-  printCard(dealerEl, game.dealerCards[0]);
-  printCard(dealerEl, "back"); // carta virada para baixo
-
-  // Player: 2 cartas
-  const playerEl = document.getElementById("player");
-  game.playerCards.push(game.deck.pop());
-  game.playerCards.push(game.deck.pop());
-  for (let c of game.playerCards) printCard(playerEl, c);
-
   debug(game); // Displays the current state of the game for debugging
 
   //TODO: Add missing code.
@@ -79,9 +73,20 @@ function newGame() {
  */
 function finalScore(state) {
   let msg = "";
-  if (state.playerWon) msg = "You Win!";
-  else if (state.dealerWon) msg = "Dealer Wins";
-  else msg = "Tied!";
+  if (state.playerBusted) {
+    msg = "Player Busted (> 25)!";
+  } else if (state.dealerBusted) {
+    msg = "Dealer Busted (> 25)!";
+  } else if (state.isDraw) {
+    msg = "Tie!";
+  } else if (state.playerWon) {
+    msg = `Player Wins! ${game.getCardsValue(game.getPlayerCards())} points!`;
+    if (game.getCardsValue(game.playerCards) === Blackjack.MAX_POINTS) {
+      msg = "BLACKJACK 25!";
+    }
+  } else if (state.dealerWon) {
+    msg = `Dealer Wins! ${game.getCardsValue(game.getDealerCards())} pontos!`;
+  }
 
   document.getElementById("game_status").innerText = msg;
 }
@@ -92,24 +97,38 @@ function finalScore(state) {
  * @param {Object} state - The current state of the game.
  */
 function updateDealer(state) {
-  const dealerEl = document.getElementById("dealer");
-  dealerEl.innerHTML = "";
+  const dealerELT = document.getElementById("dealer");
+  dealerELT.innerHTML = "";
   const dealerCards = game.getDealerCards();
-  for (let c of dealerCards) printCard(dealerEl, c);
+  //for (let c of dealerCards) printCard(dealerELT, c);
+
+  // percorre as cartas do dealer
+  for (let i = 0; i < dealerCards.length; i++) {
+    const isHiddenCard = i === 1 && !state.gameEnded; //é a 2a carta (oculta) e o jogo ainda não terminou
+
+    // se oculta: passa a string back para o ficheiro das costas da carta
+    //caso contrario: passa a carta para revelar
+    const cardToPrint = isHiddenCard ? "back" : dealerCards[i];
+
+    printCard(dealerELT, cardToPrint);
+  }
 
   const val = game.getCardsValue(dealerCards);
-  let msg = ` (${val})`;
+  let msg = ` Score [${state.gameEnded ? val : "??"}]`; //mostra a pontuação apenas quando o jogo termina: dps de ir buscar ate pelo menos 21, revela o resultado final
   if (state.gameEnded) {
     if (state.dealerWon) msg += "Dealer Wins!";
     else if (state.playerWon) msg += "Dealer Loses!";
-    else msg += "Tied!";
+    else msg += "Tie!";
   }
 
-  dealerEl.insertAdjacentHTML(
+  dealerELT.insertAdjacentHTML(
     "beforeend",
     `<div><strong>${msg}</strong></div>`
   );
-  if (state.gameEnded) finalizeButtons();
+  if (state.gameEnded) {
+    finalScore(state); //msg final jogo
+    finalizeButtons();
+  }
 }
 
 //TODO: Implement this method.
@@ -118,19 +137,19 @@ function updateDealer(state) {
  * @param {Object} state - The current state of the game.
  */
 function updatePlayer(state) {
-  const playerEl = document.getElementById("player");
-  playerEl.innerHTML = "";
-  for (let c of game.playerCards) printCard(playerEl, c);
+  const playerELT = document.getElementById("player");
+  playerELT.innerHTML = "";
+  for (let c of game.playerCards) printCard(playerELT, c); //mostra as cartas do player
 
   const val = game.getCardsValue(game.playerCards);
-  let msg = ` (${val})`;
+  let msg = ` Score [${val}]`;
   if (state.gameEnded) {
     if (state.playerWon) msg += "You Win!";
     else if (state.dealerWon) msg += "You Lose!";
-    else msg += "Tied!";
+    else msg += "Tie!";
   }
 
-  playerEl.insertAdjacentHTML(
+  playerELT.insertAdjacentHTML(
     "beforeend",
     `<div><strong>${msg}</strong></div>`
   );
@@ -145,6 +164,7 @@ function updatePlayer(state) {
 function dealerNewCard() {
   const state = game.dealerMove();
   updateDealer(state);
+  updatePlayer(state); //?
   debug(game);
   return state;
 }
@@ -157,7 +177,13 @@ function dealerNewCard() {
 function playerNewCard() {
   const state = game.playerMove();
   updatePlayer(state);
+  updateDealer(state); // atualiza o dealer caso o player rebente
   debug(game);
+
+  if (state.gameEnded) {
+    finalizeButtons();
+  }
+
   return state;
 }
 
@@ -166,22 +192,17 @@ function playerNewCard() {
  * Finishes the dealer's turn.
  */
 function dealerFinish() {
-  game.setDealerTurn(true);
-  // Revela carta escondida
-  const dealerEl = document.getElementById("dealer");
-  dealerEl.innerHTML = "";
-  for (let c of game.dealerCards) printCard(dealerEl, c);
+  game.setDealerTurn(true); //vez do dealer
 
-  let state = game.getGameState();
-  while (!state.gameEnded) {
-    const dealerVal = game.getCardsValue(game.getDealerCards());
-    if (dealerVal < Blackjack.DEALER_MAX_TURN_POINTS) {
-      state = dealerNewCard();
-    } else {
-      state = game.getGameState();
-      state.gameEnded = true;
-    }
+  let state = game.getGameState(); //estado atual
+  // "Caso o jogador passe o jogo para o dealer, este joga automaticamente até ter pelo menos 21 pontos."
+  while (
+    !state.gameEnded &&
+    game.getCardsValue(game.getDealerCards()) < Blackjack.DEALER_MAX_TURN_POINTS
+  ) {
+    state = dealerNewCard(); // dealerNewCard() chama game.dealerMove() e updateDealer()
   }
+  state = game.getGameState();
 
   updateDealer(state);
   updatePlayer(state);
@@ -197,9 +218,77 @@ function dealerFinish() {
  */
 function printCard(element, card, replace = false) {
   const img = document.createElement("img");
-  if (card === "back") img.src = "img/png/card_back.png";
-  else img.src = `img/png/${card}.png`;
-  img.alt = card;
+  if (card === "back") {
+    img.src = "img/png/card_back.png";
+    img.alt = "Card Back";
+  } else {
+    const fileName = card.getFileNameStem();
+    img.src = `img/png/${fileName}.png`;
+    img.alt = fileName;
+  }
   img.className = "m-1 card-img";
   element.appendChild(img);
+}
+/**
+ * Exibe o pop up de vitória/derrota com a mensagem final
+ * @param {string} winnerMessage - A mensagem de resultado do jogo ("Player Wins!")
+ * @param {number} PlayerScore - A pontuação final do Player.
+ * @param {number} DealerScore - A pontuação final do Dealer.
+ */
+function showWinnerPopup(winnerMessage, PlayerScore, DealerScore) {
+  // Atualiza o conteúdo do Pop Up
+  const popupMessageEl = document.getElementById("Pop_Up-message");
+  if (popupMessageEl) {
+    // Define a mensagem do vencedor no elemento do Pop Up
+    popupMessageEl.textContent = winnerMessage;
+  }
+
+  // Encontra o elemento DOM do Pop Up
+  const playerPopupElement = document.getElementById("Pop_Up-player-score");
+  const dealerPopupElement = document.getElementById("Pop_Up-dealer-score");
+  if (playerPopupElement) {
+    playerPopupElement.textContent = PlayerScore;
+  }
+
+  if (dealerPopupElement) {
+    dealerPopupElement.textContent = DealerScore;
+  }
+  const winPopupElement = document.getElementById("winPop_up");
+  if (winPopupElement) {
+    const popupInstance = bootstrap.Modal.getOrCreateInstance(winPopupElement);
+    // Abre o Pop Up!
+    popupInstance.show();
+  }
+}
+/**
+ * Calcula e exibe o score final do jogo, chamando o Pop Up de vitória/derrota
+ * @param {Object} state  O estado atual do jogo
+ *
+ */
+function finalScore(state) {
+  let msg = "";
+  const playerValue = game.getCardsValue(game.getPlayerCards());
+  const dealerValue = game.getCardsValue(game.getDealerCards());
+
+  if (state.playerBusted) {
+    msg = "Player Busted (> 25)! Dealer Wins.";
+  } else if (state.dealerBusted) {
+    msg = "Dealer Busted (> 25)! Player Wins.";
+  } else if (state.isDraw) {
+    msg = `Tie! Both with ${playerValue} points.`;
+  } else if (state.playerWon) {
+    if (playerValue === Blackjack.MAX_POINTS) {
+      msg = "BLACKJACK 25! Player Wins!";
+    } else {
+      msg = `Player Wins with ${playerValue} points!`;
+    }
+  } else if (state.dealerWon) {
+    msg = `Dealer Wins with ${dealerValue} points!`;
+  }
+
+  // Em vez de escrever na página principal, chama o pop up (modal)
+  showWinnerPopup(msg, playerValue, dealerValue);
+
+  // O status na página principal
+  document.getElementById("game_status").innerText = msg;
 }

@@ -36,25 +36,16 @@ class Blackjack {
    * @returns {Card[]} - An array of cards.
    */
   newDeck() {
-    const values = [
-      "ace",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "jack",
-      "queen",
-      "king",
-    ];
-    const suits = ["clubs", "diamonds", "hearts", "spades"];
     const deck = [];
-    for (let s of suits) {
-      for (let v of values) deck.push(`${v}_of_${s}`);
+    // 1: ace, 11: jack, 12: queen, 13: king
+    const cardValues = Array.from({ length: 13 }, (_, i) => i + 1); // conjunto [1, 2, ..., 13]
+    // 4 suits: hearts, diamonds, clubs, spades
+    const suits = Array.from({ length: 4 }, (_, i) => i + 1); // [1, 2, 3, 4]
+
+    for (const suit of suits) {
+      for (const value of cardValues) {
+        deck.push(new Card(value, suit)); //-> conjunto de 13 x 4 naipes
+      }
     }
     return deck;
   }
@@ -66,14 +57,19 @@ class Blackjack {
    * @returns {Card[]} - The shuffled deck.
    */
   shuffle(deck) {
-    const indices = [...Array(deck.length).keys()];
-    const shuffled = [];
-    while (indices.length > 0) {
-      const r = Math.floor(Math.random() * indices.length);
-      const idx = indices.splice(r, 1)[0];
-      shuffled.push(deck[idx]);
+    let indices = Array.from({ length: deck.length }, (_, i) => i); //array idx 0-51 (52 cards)
+    const shuffledDeck = [];
+
+    for (let i = 0; i < deck.length; i++) {
+      //para todas as 52 cartas
+      const randomIdx = Math.floor(Math.random() * indices.length); // gerar idx random do array de indices disponiveis criado
+      const originalIdx = indices[randomIdx]; // obter o idx correspondente no deck original
+      const card = deck[originalIdx]; // a carta sorteada
+      shuffledDeck.push(card); //carta inclui do deck baralhado
+
+      indices.splice(randomIdx, 1); //esse idx deixa de estar disponivel (carta usada) e é removido no array de idx
     }
-    return shuffled;
+    return shuffledDeck;
   }
 
   /**
@@ -107,21 +103,29 @@ class Blackjack {
    * @returns {number} - The total value of the cards.
    */
   getCardsValue(cards) {
-    let sum = 0;
-    let aceCount = 0;
-    for (let card of cards) {
-      const value = card.split("_of_")[0];
-      if (["jack", "queen", "king"].includes(value)) sum += 10;
-      else if (value === "ace") {
-        sum += 11;
-        aceCount++;
-      } else sum += parseInt(value);
+    let result = 0;
+    let aces = 0;
+
+    for (const card of cards) {
+      if (card.value >= 2 && card.value <= 10) {
+        result += card.value; //cartas numeradas refletem no seu valor de pontuaçao
+      } else if (card.value >= 11 && card.value <= 13) {
+        result += 10; // jack, queen, king valem 10
+      } else if (card.value == 1) {
+        result += 11; // [ACE] vale 11 inicialmnete (continua...)
+        aces++;
+      }
     }
-    while (sum > Blackjack.MAX_POINTS && aceCount > 0) {
-      sum -= 10;
-      aceCount--;
+
+    // [ACE] (continuação)
+    while (aces > 0 && result > Blackjack.MAX_POINTS) {
+      //ha aces na jogada e a potuação excede MAX_POINTS 25
+      //ajusta automaticamente o Ás passa de 11 para 1
+      result -= 10; // 11 - 10 = 1
+      aces--;
     }
-    return sum;
+
+    return result;
   }
 
   //TODO: Implement this method
@@ -150,52 +154,137 @@ class Blackjack {
    * @returns {Object} - The updated game state.
    */
   getGameState() {
-    const playerValue = this.getCardsValue(this.playerCards);
-    const dealerValue = this.getCardsValue(this.dealerCards);
+    const playerPoints = this.getCardsValue(this.playerCards);
+    const dealerPoints = this.getCardsValue(this.dealerCards);
 
+    //reset
     this.state = {
       gameEnded: false,
       playerWon: false,
       dealerWon: false,
       playerBusted: false,
       dealerBusted: false,
+      isDraw: false,
     };
 
-    // Player bust
-    if (playerValue > Blackjack.MAX_POINTS) {
-      this.state.playerBusted = true;
+    // [check] palyer (vitória/derrota imediata)
+    if (playerPoints > Blackjack.MAX_POINTS) {
+      this.state.gameEnded = true;
       this.state.dealerWon = true;
-      this.state.gameEnded = true;
+      this.state.playerBusted = true;
       return this.state;
     }
-
-    // Dealer bust
-    if (this.dealerTurn && dealerValue > Blackjack.MAX_POINTS) {
-      this.state.dealerBusted = true;
+    if (playerPoints === Blackjack.MAX_POINTS) {
+      this.state.gameEnded = true;
       this.state.playerWon = true;
-      this.state.gameEnded = true;
       return this.state;
     }
 
-    // Player hits 25 exactly
-    if (playerValue === Blackjack.MAX_POINTS) {
-      this.state.playerWon = true;
-      this.state.gameEnded = true;
-      return this.state;
-    }
-
-    // If dealer's turn, compare results only when both under 25
+    // [check] final (na vez do dealer)
     if (this.dealerTurn) {
-      if (dealerValue >= playerValue && dealerValue <= Blackjack.MAX_POINTS) {
-        if (dealerValue === playerValue) {
-          this.state.gameEnded = true; // tie
-        } else {
-          this.state.dealerWon = true;
-          this.state.gameEnded = true;
-        }
+      //dealer rebenta os 25
+      if (dealerPoints > Blackjack.MAX_POINTS) {
+        this.state.gameEnded = true;
+        this.state.playerWon = true; //player wins instant
+        this.state.dealerBusted = true;
+        return this.state;
       }
+
+      // se o dealer ainda nao atingiu pelo menos 21
+      if (dealerPoints < Blackjack.DEALER_MAX_TURN_POINTS) {
+        //jogo continua; dealer vai buscar mais cartas
+        return this.state;
+      }
+
+      // dealerPoints >= DEALER_MAX_TURN_POINTS (atingiu 21) -> comparar com o player
+      if (dealerPoints > playerPoints) {
+        //dealer + pontos q o player
+        this.state.gameEnded = true;
+        this.state.dealerWon = true;
+      } else if (dealerPoints === playerPoints) {
+        //dealer same pontuaçao player
+        this.state.gameEnded = true;
+        this.state.isDraw = true;
+      } else {
+        //sem rebentamentos, player tem + pontos q o dealer
+        this.state.gameEnded = true;
+        this.state.playerWon = true;
+      }
+      return this.state;
     }
 
     return this.state;
+  }
+}
+
+//Class Card
+/**
+ * Class para representar uma carta única.
+ * Usa strings para representar o value e suit da carta para referenciar
+ * facilmente os ficheiros das imagens.
+ */
+class Card {
+  static VALUE_MAP = {
+    1: "ace",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "10",
+    11: "jack",
+    12: "queen",
+    13: "king",
+  };
+  static SUIT_MAP = {
+    1: "hearts",
+    2: "diamonds",
+    3: "clubs",
+    4: "spades",
+  };
+
+  /**
+   * @param {string} value - Valor da carta (ace, 2 a 10, jack, queen, king).
+   * @param {string} suit - Naipe da carta (clubs, diamonds, hearts, spades).
+   */
+  constructor(value, suit) {
+    this.value = value;
+    this.suit = suit;
+  }
+
+  /**
+   * Retorna o valor para a pontuação do jogo Blabkjack 25.
+   * @returns {number} Valor numérico da carta (1/11 para Ace, 10 para figuras, proprio valor para cartas numeradas).
+   */
+  getCardFace() {
+    switch (this.value) {
+      case "ace":
+        return 11; // [ACE] default, tratar para ajustar entre 1 e 11
+      case "king":
+      case "queen":
+      case "jack":
+      case "10":
+        return 10;
+      default:
+        return parseInt(this.value, 10);
+    }
+  }
+
+  /**
+   * Retorna a string base do nome do ficheiro (ex: 'ace_of_spades') para a imagem.
+   * @returns {string} The filename stem.
+   */
+  getFileNameStem() {
+    const valueStr = Card.VALUE_MAP[this.value];
+    const suitStr = Card.SUIT_MAP[this.suit];
+
+    if (!valueStr || !suitStr) {
+      return "card_back"; // Fallback
+    }
+
+    return `${valueStr}_of_${suitStr}`;
   }
 }

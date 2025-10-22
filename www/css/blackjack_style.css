@@ -2,9 +2,221 @@
   width: 80px;
   height: auto;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px rgba(168, 34, 34, 0.3);
 }
 #dealer,
 #player {
   margin-bottom: 1rem;
 }
+/* Centraliza os títulos (h2), parágrafos de cartas (p), e os botões */
+#game {
+  /* Define a largura máxima para o bloco de jogo não se esticar demais */
+  max-width: 600px;
+  /* Centraliza o bloco #game na tela */
+  margin: 0 auto;
+  /* Centraliza o texto, que afeta os elementos de linha e inline-block dentro */
+  text-align: center;
+  /* Adicional: um pouco de espaço no topo */
+  padding-top: 20px;
+  
+}
+
+/* --- BOTÃO TELA PRINCIPAL --- */
+#card {
+  background-color: rgb(190, 19, 19);
+  border-color: rgb(190, 19, 19);
+}
+#stand {
+  background-color: rgb(223, 91, 10);
+  border-color: rgb(223, 91, 10);
+}
+#new_game {
+  background-color: rgb(92, 99, 109);
+  border-color: rgb(92, 99, 109);
+}
+.titulo {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: oblique;
+  color: #9e0404;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+/* --- TEXTO do dealer e player em cima das cartas e debaixo das cartas --- */
+#game {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: italic;
+}
+.btn {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: italic;
+  color: white;
+}
+
+/* Estado AO PASSAR O MOUSE (HOVER) e CLICAR (ACTIVE) */
+button.btn-primary:hover,
+button.btn-primary:active,
+button.btn-primary:focus { /* focus serve para quando passar o rato aparecer uma cor mais clariar para se ver que está a passar o rato por cima*/
+  border-color: rgb(190, 19, 19);
+  background-color: rgba(190, 19, 19, 0.825);
+}
+
+
+/* Estado AO PASSAR O MOUSE (HOVER) e CLICAR (ACTIVE) */
+button.btn-secondary:hover,
+button.btn-secondary:active,
+button.btn-secondary:focus {
+  border-color: rgb(225, 96, 15);
+  background-color: rgba(225, 96, 15, 0.825);
+}
+
+
+/* Estado AO PASSAR O MOUSE (HOVER) e CLICAR (ACTIVE) */
+button.btn-success:hover,
+button.btn-success:active,
+button.btn-success:focus {
+  border-color: rgb(92, 99, 109);
+  border-color: rgb(118, 126, 137);
+}
+/*-----debug-----*/
+.debug {
+  background-color: #d7a1a1;
+  color: #000000;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: oblique;
+}
+/* --- STATUS DO JOGO --- */
+#game_status {
+  margin-top: 1rem;
+  font-weight: bold;
+  text-align: center;
+  font-size: 25px;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  color: #9e0404;
+}
+/* --- MODAL TÍTULO --- */
+.modal-header .modal-title {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: oblique;
+  font-size: 30px;
+  color: #9e0404;
+  text-align: center;
+  flex-grow: 1; /* Faz o título ocupar o espaço inteiro (Flexbox) */
+}
+/*----subtitulo modal----*/
+#Pop_Up-message{
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: oblique;
+  font-size: 20px;
+}
+.Pop_Up-score{
+  font-family: Georgia, "Times New Roman", Times, serif;
+  text-decoration: underline;
+  font-weight: bold;
+  font-size: 18px;
+}
+th.player-label{/*th = table header QUE é a tag onde esta o player e dealer especificamente */
+  font-family: Georgia, "Times New Roman", Times, serif;
+  color:#9e0404;
+}
+th.dealer-label{
+  font-family: Georgia, "Times New Roman", Times, serif;
+  color:#9e0404;
+}
+
+/* --- BOTÃO MODAL --- */
+button.btn-success.botao_Modal {/* Estado NORMAL */
+  background-color: rgb(92, 99, 109);
+  color: white; /* texto é branco */
+}
+/* Estado AO PASSAR O MOUSE (HOVER) e CLICAR/PREMER (ACTIVE) */
+button.btn-success.botao_Modal:hover,
+button.btn-success.botao_Modal:active,
+button.btn-success.botao_Modal:focus {
+  background-color: rgb(118, 126, 137) ;
+  border-color: rgb(118, 126, 137) ;
+}
+
+/*MARGENS*/
+/* --- com margens laterais vermelhas sem a parte de cima --- 
+
+body {
+    /* Remove margens e paddings padrão *
+    margin: 0;
+    padding: 0;
+    
+    /* Define a cor de fundo nas margens laterais *
+    background-color: #550000; /* Use sua cor vermelha aqui *
+    
+    /* Garante que o body ocupe a altura mínima para que a cor lateral seja visível *
+    min-height: 100vh;
+}
+*/
+
+/* --- 2. CONFIGURAÇÃO DO CONTAINER CENTRAL --- */
+
+/* Aplica fundo branco aos containers, cobrindo o fundo do body *
+.container {
+    background-color: white; 
+    
+    /* Zera a margem superior padrão do container *
+    margin-top:0; 
+    
+    /* Zera o padding superior padrão do container, se houver *
+    padding-top: 0 ; 
+}
+*/
+
+/* --- 3. CORREÇÃO DA MARGEM DO TÍTULO (H1) --- *
+
+O H1 é o que mais "empurra" o conteúdo. Zere sua margem superior. 
+.titulo h1 {
+    /* ... seus estilos existentes ... *
+    margin-top: 0; 
+}
+
+/* Opcional: Se precisar de espaço acima do título, adicione padding ao .titulo
+   em vez de margin-top ao h1 *
+.titulo {
+    /* Adiciona padding interno em vez de margin-top, mantendo o fundo branco *
+    padding-top: 20px; 
+
+    /* Remova as margens que você tinha definido antes: *
+    margin-top: 0; 
+}*/
+
+
+/**......*/
+
+/* --- com margens laterais vermelhas COM a parte de cima --- 
+/* 1. Remove qualquer margem padrão do navegador e garante que o fundo 
+      ocupe toda a altura da janela. *
+body {
+    margin: 0;
+    padding: 0;
+    
+    /* Define a cor de fundo que aparecerá nas laterais *
+    background-color: #550000; /* Exemplo: Vermelho Escuro */
+    
+    /* Garante que o body ocupe, no mínimo, a altura da janela de visualização *
+    min-height: 100vh;
+}
+
+/* 2. Garante que o conteúdo central (os containers do Bootstrap) 
+      tenha um fundo branco ou da cor da sua preferência. *
+.container {
+    background-color: white; 
+    
+    /* Opcional: Adiciona uma sombra para destacar a área central *
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    
+    /* Opcional: Adiciona um pequeno padding interno para que o fundo branco 
+       não fique exatamente colado no conteúdo, se necessário. */
+    /* padding: 10px 0; *
+}
+
+/* 3. Se o seu <h1> está a empurrar o container para baixo, 
+      pode ser necessário remover a margem superior do <h1> *
+.titulo h1 {
+    /* ... seus estilos existentes ... *
+    margin-top: 0; 
+}*/
