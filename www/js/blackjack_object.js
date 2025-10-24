@@ -285,6 +285,10 @@ class Card {
       return "card_back";
     }
 
+    if (this.value >= 11 && this.value <= 13) {
+      return `${valueStr}_of_${suitStr}2`;
+    }
+
     return `${valueStr}_of_${suitStr}`;
   }
 }
